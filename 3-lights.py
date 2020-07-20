@@ -4,6 +4,10 @@ import time
 import datetime
 import RPi.GPIO as GPIO
 
+# set your location
+Latitude = 30.678637
+Longitude = -106.927596
+
 # set GPIO numbering mode and define output pins
 GPIO.setmode(GPIO.BOARD)
 GPIO.setup(37, GPIO.OUT)  # white light 1
@@ -51,9 +55,7 @@ def sleepTillNextTrans(period):
     time.sleep((timeTillNextTrans.seconds + sleepBuffer))
 
 # function for calculating lighting schedule
-def calculate_schedule(date):
-    Latitude = 30.678637
-    Longitude = -106.927596
+def calculate_schedule(date, Latitude, Longitude):
     API_URL = 'https://api.sunrise-sunset.org/json?lat=' + str(Latitude) + '&lng=' + str(Longitude) + '&date=' + date + '&formatted=0'
     response = requests.get(API_URL)
     j = json.loads(response.text)
@@ -76,7 +78,7 @@ def calculate_schedule(date):
     print()
     return my_dict
 
-schedule = calculate_schedule('today')
+schedule = calculate_schedule('today', Latitude, Longitude)
 
 # Turn lights on and off based on the time
 try:
@@ -90,7 +92,7 @@ try:
             GPIO.output(40, False)
             print("all off")
             tomorrow = datetime.datetime(now.year, now.month, (now.day + 1))
-            schedule = calculate_schedule(str(tomorrow.date()))
+            schedule = calculate_schedule(str(tomorrow.date()), Latitude, Longitude)
             print("Get ready for a new day!")
             sleepTillNextTrans('twilight_begin')
         # sunset - 1 orange
